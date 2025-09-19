@@ -7,3 +7,7 @@ transformers
 faiss-cpu
 ultralytics
 python-multipart
+scikit-learn
+numpy
+opencv-python
+mtcnn
