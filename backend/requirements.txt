@@ -12,3 +12,6 @@ numpy
 opencv-python
 mtcnn
 tensorflow
+huggingface_hub
+ 
+

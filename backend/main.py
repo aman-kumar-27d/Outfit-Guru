@@ -4,31 +4,19 @@ main.py - FastAPI entrypoint for Fashion Recommendation API
 Organized for clarity and maintainability.
 """
 
-# Standard library imports
-from contextlib import asynccontextmanager
 
 # Third-party imports
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 
 # Local application imports
-from utils.detect import init_model, detect_image_bytes
+from utils.detect import init_models, detect_image_bytes
 from utils.face_blur import blur_faces
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Initialize model at startup to avoid first-request lag.
-    You can pass device="cuda" if you have GPU and want to use it.
-    """
-    init_model(model_path="yolov8n.pt", device=None)
-    yield
-
 
 app = FastAPI(
-    title="Fashion Recommendation API",
-    lifespan=lifespan
+    title="Fashion Recommendation API"
 )
 
 
