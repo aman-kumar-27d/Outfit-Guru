@@ -1,5 +1,9 @@
 data/*
 notebooks/yolov8n.pt
+blurred_uploads
+
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

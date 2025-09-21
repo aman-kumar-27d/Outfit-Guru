@@ -11,3 +11,4 @@ scikit-learn
 numpy
 opencv-python
 mtcnn
+tensorflow
