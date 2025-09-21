@@ -1,8 +1,7 @@
 data/*
-notebooks/yolov8n.pt
-blurred_uploads
-
-
+weights
+blurred_uploads/*
+public
 
 
 # Byte-compiled / optimized / DLL files
