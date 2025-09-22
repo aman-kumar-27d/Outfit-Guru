@@ -51,3 +51,21 @@ fashion-recommendation/
 │
 ├── .gitignore
 └── README.md
+
+
+### 🔹 Implementation Roadmap
+
+Detection layer (done) → YOLO + JSON.
+
+LLM Outfit Analyzer → analyze_outfit.py (takes JSON, returns JSON).
+
+Rule-based + ML recommender → recommend_hybrid.py.
+
+LLM Recommendation Enhancer → enhance_recommendation.py.
+
+Frontend integration → display both raw detections and LLM-enhanced descriptions.
+
+### 👉 This pipeline makes your project:
+✔️ Structured (rules + ML) → reliable.
+✔️ Personalized (LLM) → human-like advice.
+✔️ Interactive (feedback loop) → next-level user experience.
