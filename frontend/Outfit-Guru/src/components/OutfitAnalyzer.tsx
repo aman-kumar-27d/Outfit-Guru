@@ -1,5 +1,6 @@
 
-import { BarChart3, TrendingUp, Star, Palette, User, Target, MessageSquare, CheckCircle, XCircle, Package, Tag, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { BarChart3, TrendingUp, Star, Palette, User, Target, MessageSquare, CheckCircle, XCircle, Package, Tag, Loader2, Sparkles, ShoppingBag } from "lucide-react";
 
 type Detection = {
   label: string;
@@ -28,6 +29,33 @@ type AnalysisResponse = {
   };
 };
 
+type RecommendedItem = {
+  label: string;
+  color?: string; // Make color optional since API doesn't return it
+  source: string;
+};
+
+type EnhancementResponse = {
+  recommended_items: RecommendedItem[];
+  final_enhancement: {
+    final_description: string | {
+      final_description: string;
+      recommendation_style: string;
+      confidence_level: string;
+      items_explained?: Array<{
+        label: string;
+        reason: string;
+      }>;
+    };
+    recommendation_style: string;
+    confidence_level: string;
+    items_explained?: Array<{
+      label: string;
+      reason: string;
+    }>;
+  };
+};
+
 interface OutfitAnalyzerProps {
   detections: Detection[];
   personRegions: PersonRegion[];
@@ -37,7 +65,10 @@ interface OutfitAnalyzerProps {
 }
 
 export default function OutfitAnalyzer({ detections, personRegions, selectedOccasion, analysisData, analysisLoading }: OutfitAnalyzerProps) {
-    personRegions;
+  const [enhancementData, setEnhancementData] = useState<EnhancementResponse | null>(null);
+  const [enhancementLoading, setEnhancementLoading] = useState(false);
+  const [showEnhancement, setShowEnhancement] = useState(false);
+
     // Get occasion specific data
   const getOccasionData = (occasion: string) => {
     const occasionMap: Record<string, { 
@@ -93,6 +124,241 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
   };
 
   const occasionData = getOccasionData(selectedOccasion);
+
+  // Helper function to get item icon and category based on label
+  const getItemInfo = (label: string) => {
+    const lowerLabel = label.toLowerCase().trim();
+    
+    // Define comprehensive item mappings
+    const itemMappings = [
+      // Outerwear
+      { 
+        keywords: ['jacket', 'coat', 'blazer', 'cardigan', 'hoodie', 'sweater', 'pullover', 'vest', 'windbreaker', 'parka'],
+        icon: '🧥',
+        category: 'Outerwear'
+      },
+      // Footwear
+      { 
+        keywords: ['sneakers', 'shoes', 'boots', 'sandals', 'heels', 'flats', 'loafers', 'trainers', 'pumps', 'slippers'],
+        icon: '👟',
+        category: 'Footwear'
+      },
+      // Accessories - Timepieces
+      { 
+        keywords: ['watch', 'smartwatch', 'timepiece', 'wristwatch'],
+        icon: '⌚',
+        category: 'Accessory'
+      },
+      // Bags
+      { 
+        keywords: ['bag', 'backpack', 'purse', 'handbag', 'tote', 'clutch', 'satchel', 'briefcase', 'messenger'],
+        icon: '🎒',
+        category: 'Bag'
+      },
+      // Headwear
+      { 
+        keywords: ['hat', 'cap', 'beanie', 'beret', 'fedora', 'baseball cap', 'bucket hat', 'snapback'],
+        icon: '🧢',
+        category: 'Headwear'
+      },
+      // Jewelry
+      { 
+        keywords: ['necklace', 'jewelry', 'bracelet', 'ring', 'earrings', 'chain', 'pendant', 'jewellery'],
+        icon: '💍',
+        category: 'Jewelry'
+      },
+      // Eyewear
+      { 
+        keywords: ['glasses', 'sunglasses', 'eyewear', 'specs', 'shades'],
+        icon: '🕶️',
+        category: 'Eyewear'
+      },
+      // Belts & Straps
+      { 
+        keywords: ['belt', 'strap', 'waistband'],
+        icon: '⚫',
+        category: 'Accessory'
+      },
+      // Scarves & Wraps
+      { 
+        keywords: ['scarf', 'wrap', 'shawl', 'pashmina', 'bandana'],
+        icon: '🧣',
+        category: 'Accessory'
+      },
+      // Gloves
+      { 
+        keywords: ['gloves', 'mittens'],
+        icon: '🧤',
+        category: 'Accessory'
+      },
+      // Tops
+      { 
+        keywords: ['shirt', 'blouse', 'top', 't-shirt', 'tank', 'camisole', 'polo', 'tee'],
+        icon: '👕',
+        category: 'Top'
+      },
+      // Bottoms
+      { 
+        keywords: ['pants', 'jeans', 'trousers', 'shorts', 'skirt', 'dress', 'leggings', 'tights'],
+        icon: '👖',
+        category: 'Bottom'
+      },
+      // Socks & Hosiery
+      { 
+        keywords: ['socks', 'stockings', 'pantyhose', 'tights', 'hosiery'],
+        icon: '🧦',
+        category: 'Hosiery'
+      }
+    ];
+
+    // Find matching category
+    for (const mapping of itemMappings) {
+      if (mapping.keywords.some(keyword => lowerLabel.includes(keyword))) {
+        return { icon: mapping.icon, category: mapping.category };
+      }
+    }
+
+    // Log unknown items for debugging (can be removed in production)
+    console.log(`Unknown item category detected: "${label}" - using default fallback`);
+    
+    // Default fallback for unknown items
+    return { icon: '✨', category: 'Accessory' };
+  };
+
+  // Helper function to extract enhancement data properly
+  const extractEnhancementData = (enhancementData: EnhancementResponse) => {
+    const finalEnhancement = enhancementData.final_enhancement;
+    
+    // Handle the new structure where final_enhancement might be directly the data we need
+    if (typeof finalEnhancement === 'object' && finalEnhancement.final_description && typeof finalEnhancement.final_description === 'string') {
+      // Direct object structure (new API format)
+      return {
+        final_description: finalEnhancement.final_description || 'Enhancement details processed successfully.',
+        recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
+        confidence_level: finalEnhancement.confidence_level || 'medium',
+        items_explained: finalEnhancement.items_explained || []
+      };
+    }
+    
+    // Check if final_description is a string (old format with potential JSON)
+    if (typeof finalEnhancement.final_description === 'string') {
+      // Check if it looks like JSON (starts with { or contains JSON-like structure)
+      const trimmedDescription = finalEnhancement.final_description.trim();
+      if (trimmedDescription.startsWith('```json') || trimmedDescription.startsWith('``json') || trimmedDescription.startsWith('{')) {
+        try {
+          // Clean up markdown code blocks if present - handle various formats
+          let cleanJson = trimmedDescription;
+          
+          // Remove various markdown code block formats
+          cleanJson = cleanJson
+            .replace(/^```json\s*/, '')      // Standard ```json
+            .replace(/^``json\s*/, '')       // Malformed ``json  
+            .replace(/^`+json\s*/, '')       // Any number of backticks + json
+            .replace(/\s*```$/, '')          // Ending ```
+            .replace(/\s*``$/, '')           // Ending ``
+            .replace(/\s*`+$/, '');          // Any trailing backticks
+          
+          const parsed = JSON.parse(cleanJson);
+          
+          return {
+            final_description: parsed.final_description || 'Enhancement details processed successfully.',
+            recommendation_style: parsed.recommendation_style || finalEnhancement.recommendation_style || 'personalized style',
+            confidence_level: parsed.confidence_level || finalEnhancement.confidence_level || 'medium',
+            items_explained: parsed.items_explained || finalEnhancement.items_explained || []
+          };
+        } catch (error) {
+          console.error('JSON parsing error:', error);
+          console.log('Raw data:', trimmedDescription);
+          
+          // If JSON parsing fails, try to extract readable content
+          const cleanText = trimmedDescription
+            .replace(/^`+json\s*/, '')
+            .replace(/\s*`+$/, '')
+            .replace(/^\{.*?"final_description":\s*"/, '')
+            .replace(/",.*$/, '');
+          
+          return {
+            final_description: cleanText || 'Enhancement recommendations are being processed.',
+            recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
+            confidence_level: finalEnhancement.confidence_level || 'medium',
+            items_explained: finalEnhancement.items_explained || []
+          };
+        }
+      } else {
+        // Regular string, use as is
+        return {
+          final_description: finalEnhancement.final_description,
+          recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
+          confidence_level: finalEnhancement.confidence_level || 'medium',
+          items_explained: finalEnhancement.items_explained || []
+        };
+      }
+    }
+    
+    // Fallback for unexpected structure
+    return {
+      final_description: 'Enhancement recommendations processed successfully.',
+      recommendation_style: 'personalized style',
+      confidence_level: 'medium',
+      items_explained: []
+    };
+  };
+
+  const handleGetEnhancement = async () => {
+    if (detections.length === 0) return;
+    
+    setEnhancementLoading(true);
+    setShowEnhancement(true);
+
+    try {
+      const requestData = {
+        detections: detections.reduce((acc, detection, index) => {
+          acc[`detection_${index}`] = {
+            label: detection.label,
+            confidence: detection.confidence,
+            bbox: detection.bbox,
+            dominant_color_hex: detection.dominant_color_hex,
+            source_model: detection.source_model
+          };
+          return acc;
+        }, {} as Record<string, any>),
+        person_regions: personRegions.length > 0 ? personRegions : null,
+        occasion: selectedOccasion,
+        exclude_previous: []
+      };
+
+      // If we have analysis data, include it in the request
+      if (analysisData) {
+        requestData.detections.analysis = analysisData.analysis;
+      }
+
+      const response = await fetch("http://localhost:8000/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const enhancementResult = await response.json();
+      
+      // Handle the new response format with hybrid_recommendations and enhanced
+      if (enhancementResult.hybrid_recommendations && enhancementResult.enhanced) {
+        setEnhancementData({
+          recommended_items: enhancementResult.hybrid_recommendations,
+          final_enhancement: enhancementResult.enhanced
+        });
+      } else {
+        // Fallback for old structure
+        setEnhancementData(enhancementResult);
+      }
+    } catch (err) {
+      console.error("Enhancement failed", err);
+    } finally {
+      setEnhancementLoading(false);
+    }
+  };
+
   return (
     <section className="bg-white border-t border-gray-200 py-16">
       <div className="container mx-auto px-4">
@@ -341,7 +607,7 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
           </div>
 
           {/* Recommendations Section */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Target className="w-5 h-5 text-green-600" />
@@ -383,7 +649,194 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
                 </div>
               </div>
             </div>
+
+            {/* Enhancement Button */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="text-center">
+                <button
+                  onClick={handleGetEnhancement}
+                  disabled={enhancementLoading || detections.length === 0}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 mx-auto shadow-lg hover:shadow-xl"
+                >
+                  {enhancementLoading && <Loader2 className="w-5 h-5 animate-spin" />}
+                  <Sparkles className="w-5 h-5" />
+                  {enhancementLoading ? "Getting Enhancement..." : "Enhance My Outfit"}
+                  <ShoppingBag className="w-5 h-5" />
+                </button>
+                <p className="text-sm text-gray-500 mt-3">
+                  Get AI-powered recommendations to upgrade your outfit
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Enhancement Results Section */}
+          {showEnhancement && (
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg border border-purple-200 p-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900">Outfit Enhancement</h3>
+                {enhancementLoading && <Loader2 className="w-5 h-5 animate-spin text-purple-600" />}
+              </div>
+
+              {enhancementLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+                    <p className="text-gray-600 font-medium">Generating enhancement recommendations...</p>
+                    <p className="text-sm text-gray-500">Finding the perfect additions for your outfit</p>
+                  </div>
+                </div>
+              ) : enhancementData ? (
+                <div className="space-y-8">
+                  {(() => {
+                    const extractedData = extractEnhancementData(enhancementData);
+                    return (
+                      <>
+                        {/* Final Enhancement Description */}
+                        <div className="bg-white rounded-lg p-6 border border-purple-100">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-purple-600" />
+                            Enhancement Summary
+                          </h4>
+                          <div className="space-y-4">
+                            {/* Main Description */}
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                              <p className="text-gray-700 leading-relaxed text-base">
+                                {extractedData.final_description}
+                              </p>
+                            </div>
+                            
+                            {/* Style and Confidence Tags */}
+                            <div className="flex flex-wrap gap-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 font-medium">Style:</span>
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 capitalize">
+                                  {extractedData.recommendation_style}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 font-medium">Confidence:</span>
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                                  extractedData.confidence_level === 'high' ? 'bg-green-100 text-green-800' :
+                                  extractedData.confidence_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {extractedData.confidence_level}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Items Explained Section */}
+                            {extractedData.items_explained && extractedData.items_explained.length > 0 && (
+                              <div className="mt-6">
+                                <h5 className="text-md font-semibold text-gray-900 mb-3">Why These Items?</h5>
+                                <div className="space-y-3">
+                                  {extractedData.items_explained.map((item: { label: string; reason: string }, index: number) => (
+                                    <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                      <div className="flex-shrink-0">
+                                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                          <span className="text-purple-600 font-semibold text-sm">{index + 1}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex-1">
+                                        <h6 className="font-semibold text-gray-900 capitalize mb-1">{item.label}</h6>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{item.reason}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* Recommended Items */}
+                  {enhancementData.recommended_items && enhancementData.recommended_items.length > 0 ? (
+                    <div className="bg-white rounded-lg p-6 border border-purple-100">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-purple-600" />
+                        Recommended Items ({enhancementData.recommended_items.length})
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {enhancementData.recommended_items.map((item, index) => {
+                          const itemInfo = getItemInfo(item.label);
+                          return (
+                            <div key={index} className="border border-purple-200 rounded-lg p-5 hover:border-purple-300 transition-all duration-200 hover:shadow-lg bg-gradient-to-br from-white to-purple-50/30">
+                              <div className="flex items-start justify-between mb-4">
+                                <h5 className="font-semibold text-gray-900 capitalize text-lg leading-tight">{item.label}</h5>
+                                <div className="flex items-center gap-2 ml-3">
+                                  {/* Item type icon based on label */}
+                                  <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center text-lg shadow-sm">
+                                    {itemInfo.icon}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500 font-medium">Category</span>
+                                  <span className="text-sm font-semibold text-gray-700 capitalize bg-gray-50 px-2 py-1 rounded-full">
+                                    {itemInfo.category}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Recommendation Source</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full font-medium uppercase ${
+                                    item.source === 'llm' ? 'bg-blue-100 text-blue-800' :
+                                    item.source === 'ml+rule' ? 'bg-green-100 text-green-800' :
+                                    item.source === 'rule' ? 'bg-orange-100 text-orange-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {item.source}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Priority</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                    item.source === 'llm' ? 'bg-red-100 text-red-800' :
+                                    item.source === 'ml+rule' ? 'bg-yellow-100 text-yellow-800' :
+                                    item.source === 'rule' ? 'bg-green-100 text-green-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {item.source === 'llm' ? 'High' :
+                                     item.source === 'ml+rule' ? 'Medium' :
+                                     item.source === 'rule' ? 'Standard' :
+                                     'Unknown'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-lg p-6 border border-purple-100">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-purple-600" />
+                        Recommended Items
+                      </h4>
+                      <div className="text-center py-8 text-gray-500">
+                        <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p>No specific item recommendations at this time.</p>
+                        <p className="text-sm">Check the enhancement summary above for style guidance.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p>Enhancement recommendations will appear here once processing is complete</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>
