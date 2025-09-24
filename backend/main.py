@@ -11,8 +11,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Local application imports
-from utils.D2 import detect_image_bytes
-# from utils.detect import detect_image_bytes
+from utils.D2 import detect_image_bytes_v2
+from utils.detect import detect_image_bytes
 from utils.face_blur import blur_faces
 from utils.llm_analyzer import analyze_outfit
 from utils.recommend_hybrid import generate_hybrid_recommendations
@@ -65,6 +65,30 @@ async def detect(file: UploadFile = File(...)):
 
     # Run detection on blurred image
     result = detect_image_bytes(blurred_bytes, conf_thresh=0.25)
+    return result
+
+# New detection endpoint using updated detection function
+@app.post("/detect-v2")
+async def detect(file: UploadFile = File(...)):
+    """
+    Accepts an image file, blurs faces, and runs detection.
+    Only .jpg and .png images are allowed.
+    """
+     # Validate file extension
+    allowed_ext = (".jpg", ".png")
+    if not file.filename.lower().endswith(allowed_ext):
+        return JSONResponse(status_code=400, content={"error": "Only .jpg and .png images are allowed."})
+
+    # Read file contents
+    contents = await file.read()
+    if not contents:
+        return JSONResponse(status_code=400, content={"error": "Empty file"})
+
+    # Blur faces in the image
+    blurred_bytes = blur_faces(contents)
+
+    # Run detection on blurred image
+    result = detect_image_bytes_v2(blurred_bytes, conf_thresh=0.25)
     return result
 
 

@@ -69,3 +69,20 @@ Frontend integration → display both raw detections and LLM-enhanced descriptio
 ✔️ Structured (rules + ML) → reliable.
 ✔️ Personalized (LLM) → human-like advice.
 ✔️ Interactive (feedback loop) → next-level user experience.
+
+
+## 🚀 Installation
+
+Clone repo and run:
+
+```bash
+# Linux/Mac
+make install (Make.file)
+    install:
+	    pip install -r requirements.txt
+	    python scripts/post_install.py
+# Windows
+install.bat
+    @echo off
+    pip install -r requirements.txt
+    python scripts\post_install.py

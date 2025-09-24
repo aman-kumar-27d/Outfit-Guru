@@ -154,7 +154,7 @@ def _split_person_regions(box: Tuple[int, int, int, int], img_shape: Tuple[int, 
 # Detection Functions
 # -------------------
 
-# def detect_image_bytes(image_bytes: bytes, conf_thresh: float = 0.3, k_colors: int = 2) -> Dict[str, Any]:
+# def detect_image_bytes_v2(image_bytes: bytes, conf_thresh: float = 0.3, k_colors: int = 2) -> Dict[str, Any]:
 #     models = init_models()
 
 #     pil = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -210,7 +210,7 @@ def _split_person_regions(box: Tuple[int, int, int, int], img_shape: Tuple[int, 
 
 #     return out
 
-def detect_image_bytes(image_bytes: bytes, conf_thresh: float = 0.25, k_colors: int = 2,
+def detect_image_bytes_v2(image_bytes: bytes, conf_thresh: float = 0.25, k_colors: int = 2,
                        classifier_threshold: float = 0.35, combined_threshold: float = 0.35) -> Dict[str,Any]:
     """
     Now runs:

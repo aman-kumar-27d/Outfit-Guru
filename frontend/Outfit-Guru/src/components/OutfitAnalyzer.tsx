@@ -231,19 +231,82 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
     
     // Handle the new structure where final_enhancement might be directly the data we need
     if (typeof finalEnhancement === 'object' && finalEnhancement.final_description && typeof finalEnhancement.final_description === 'string') {
-      // Direct object structure (new API format)
-      return {
-        final_description: finalEnhancement.final_description || 'Enhancement details processed successfully.',
-        recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
-        confidence_level: finalEnhancement.confidence_level || 'medium',
-        items_explained: finalEnhancement.items_explained || []
-      };
+      // Check if final_description contains JSON wrapped in markdown code blocks
+      const description = finalEnhancement.final_description.trim();
+      
+      if (description.startsWith('```json') || description.startsWith('``json') || description.startsWith('{')) {
+        try {
+          // Clean up markdown code blocks if present - handle various formats
+          let cleanJson = description;
+          
+          // Remove various markdown code block formats
+          cleanJson = cleanJson
+            .replace(/^```json\s*/, '')      // Standard ```json
+            .replace(/^``json\s*/, '')       // Malformed ``json  
+            .replace(/^`+json\s*/, '')       // Any number of backticks + json
+            .replace(/\s*```\s*$/, '')       // Ending ```
+            .replace(/\s*``\s*$/, '')        // Ending ``
+            .replace(/\s*`+\s*$/, '')        // Any trailing backticks
+            .trim();                         // Remove any remaining whitespace
+          
+          // Additional cleanup for any remaining backticks or quotes at the end
+          if (cleanJson.endsWith('"')) {
+            cleanJson = cleanJson.slice(0, -1);
+          }
+          
+          const parsed = JSON.parse(cleanJson);
+          
+          return {
+            final_description: parsed.final_description || 'Enhancement details processed successfully.',
+            recommendation_style: parsed.recommendation_style || finalEnhancement.recommendation_style || 'personalized style',
+            confidence_level: parsed.confidence_level || finalEnhancement.confidence_level || 'medium',
+            items_explained: parsed.items_explained || finalEnhancement.items_explained || []
+          };
+        } catch (error) {
+          console.error('JSON parsing error:', error);
+          console.log('Raw data that failed to parse:', description);
+          
+          // Fallback: try to extract just the description text manually
+          let fallbackDescription = description;
+          
+          // Try to extract the final_description value manually using regex
+          const descriptionMatch = fallbackDescription.match(/"final_description":\s*"([^"]+)"/);
+          if (descriptionMatch && descriptionMatch[1]) {
+            fallbackDescription = descriptionMatch[1];
+          } else {
+            // Remove JSON structure artifacts if regex fails
+            fallbackDescription = fallbackDescription
+              .replace(/^```json\s*/, '')
+              .replace(/\s*```\s*$/, '')
+              .replace(/^\{\s*/, '')
+              .replace(/\s*\}\s*$/, '')
+              .replace(/"final_description":\s*"/, '')
+              .replace(/",.*$/, '')
+              .replace(/\\"/g, '"'); // Unescape quotes
+          }
+          
+          return {
+            final_description: fallbackDescription || 'Enhancement recommendations processed successfully.',
+            recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
+            confidence_level: finalEnhancement.confidence_level || 'medium',
+            items_explained: finalEnhancement.items_explained || []
+          };
+        }
+      } else {
+        // Regular string, use as is
+        return {
+          final_description: finalEnhancement.final_description,
+          recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
+          confidence_level: finalEnhancement.confidence_level || 'medium',
+          items_explained: finalEnhancement.items_explained || []
+        };
+      }
     }
     
     // Check if final_description is a string (old format with potential JSON)
     if (typeof finalEnhancement.final_description === 'string') {
-      // Check if it looks like JSON (starts with { or contains JSON-like structure)
       const trimmedDescription = finalEnhancement.final_description.trim();
+      
       if (trimmedDescription.startsWith('```json') || trimmedDescription.startsWith('``json') || trimmedDescription.startsWith('{')) {
         try {
           // Clean up markdown code blocks if present - handle various formats
@@ -254,9 +317,15 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
             .replace(/^```json\s*/, '')      // Standard ```json
             .replace(/^``json\s*/, '')       // Malformed ``json  
             .replace(/^`+json\s*/, '')       // Any number of backticks + json
-            .replace(/\s*```$/, '')          // Ending ```
-            .replace(/\s*``$/, '')           // Ending ``
-            .replace(/\s*`+$/, '');          // Any trailing backticks
+            .replace(/\s*```\s*$/, '')       // Ending ```
+            .replace(/\s*``\s*$/, '')        // Ending ``
+            .replace(/\s*`+\s*$/, '')        // Any trailing backticks
+            .trim();
+          
+          // Additional cleanup for trailing quotes
+          if (cleanJson.endsWith('"')) {
+            cleanJson = cleanJson.slice(0, -1);
+          }
           
           const parsed = JSON.parse(cleanJson);
           
@@ -270,15 +339,26 @@ export default function OutfitAnalyzer({ detections, personRegions, selectedOcca
           console.error('JSON parsing error:', error);
           console.log('Raw data:', trimmedDescription);
           
-          // If JSON parsing fails, try to extract readable content
-          const cleanText = trimmedDescription
-            .replace(/^`+json\s*/, '')
-            .replace(/\s*`+$/, '')
-            .replace(/^\{.*?"final_description":\s*"/, '')
-            .replace(/",.*$/, '');
+          // Manual extraction fallback
+          let extractedText = trimmedDescription;
+          const descMatch = extractedText.match(/"final_description":\s*"([^"]+)"/);
+          
+          if (descMatch && descMatch[1]) {
+            extractedText = descMatch[1];
+          } else {
+            // Remove JSON artifacts manually
+            extractedText = extractedText
+              .replace(/^```json\s*/, '')
+              .replace(/\s*```\s*$/, '')
+              .replace(/^\{\s*/, '')
+              .replace(/\s*\}\s*$/, '')
+              .replace(/"final_description":\s*"/, '')
+              .replace(/",.*$/, '')
+              .replace(/\\"/g, '"');
+          }
           
           return {
-            final_description: cleanText || 'Enhancement recommendations are being processed.',
+            final_description: extractedText || 'Enhancement recommendations are being processed.',
             recommendation_style: finalEnhancement.recommendation_style || 'personalized style',
             confidence_level: finalEnhancement.confidence_level || 'medium',
             items_explained: finalEnhancement.items_explained || []

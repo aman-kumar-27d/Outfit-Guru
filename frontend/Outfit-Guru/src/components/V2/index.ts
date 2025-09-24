@@ -1,0 +1,1 @@
+export { default as OutfitDetectorV2 } from './OutfitDetectorV2';
