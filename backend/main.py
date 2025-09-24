@@ -11,7 +11,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Local application imports
-from utils.detect import detect_image_bytes
+from utils.D2 import detect_image_bytes
+# from utils.detect import detect_image_bytes
 from utils.face_blur import blur_faces
 from utils.llm_analyzer import analyze_outfit
 from utils.recommend_hybrid import generate_hybrid_recommendations
