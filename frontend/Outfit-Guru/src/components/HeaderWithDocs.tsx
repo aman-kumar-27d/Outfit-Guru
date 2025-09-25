@@ -3,10 +3,16 @@ import { Menu, X, BookOpen } from 'lucide-react';
 
 interface HeaderProps {
   navigate?: (path: string) => void;
+  currentVersion?: 'v1' | 'v2';
 }
 
-const Header: React.FC<HeaderProps> = ({ navigate }) => {
+const Header: React.FC<HeaderProps> = ({ navigate, currentVersion = 'v1' }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Get the theme color based on version
+  const hoverTextColor = currentVersion === 'v2' ? 'hover:text-purple-600' : 'hover:text-blue-600';
+  const buttonBgColor = currentVersion === 'v2' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700';
+  const logoAccentColor = currentVersion === 'v2' ? 'text-purple-600' : 'text-blue-600';
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -45,9 +51,9 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
           <div className="flex items-center">
             <button 
               onClick={handleLogoClick}
-              className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
+              className={`text-2xl font-bold text-gray-900 ${hoverTextColor} transition-colors`}
             >
-              Outfit<span className="text-blue-600">Guru</span>
+              Outfit<span className={`transition-colors duration-300 ${logoAccentColor}`}>Guru</span>
             </button>
           </div>
 
@@ -61,31 +67,31 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
                   scrollToSection('home');
                 }
               }}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className={`text-gray-700 ${hoverTextColor} transition-colors duration-200 font-medium`}
             >
               Home
             </button>
             <button
               onClick={() => scrollToSection('features')}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className={`text-gray-700 ${hoverTextColor} transition-colors duration-200 font-medium`}
             >
               Features
             </button>
             <button
               onClick={() => scrollToSection('about')}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className={`text-gray-700 ${hoverTextColor} transition-colors duration-200 font-medium`}
             >
               About
             </button>
             <button
               onClick={() => scrollToSection('contact')}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className={`text-gray-700 ${hoverTextColor} transition-colors duration-200 font-medium`}
             >
               Contact
             </button>
             <button
               onClick={() => handleNavigation('/docs')}
-              className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className={`flex items-center space-x-1 text-gray-700 ${hoverTextColor} transition-colors duration-200 font-medium`}
             >
               <BookOpen className="h-4 w-4" />
               <span>Docs</span>
@@ -96,7 +102,7 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
           <div className="hidden md:flex items-center">
             <button 
               onClick={() => scrollToSection('home')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+              className={`${buttonBgColor} text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200`}
             >
               Get Started
             </button>
@@ -106,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              className={`text-gray-700 ${hoverTextColor} transition-colors duration-200`}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -129,31 +135,31 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
                     scrollToSection('home');
                   }
                 }}
-                className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md font-medium transition-colors duration-200"
+                className={`block w-full text-left px-3 py-2 text-gray-700 ${hoverTextColor} hover:bg-gray-50 rounded-md font-medium transition-colors duration-200`}
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToSection('features')}
-                className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md font-medium transition-colors duration-200"
+                className={`block w-full text-left px-3 py-2 text-gray-700 ${hoverTextColor} hover:bg-gray-50 rounded-md font-medium transition-colors duration-200`}
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection('about')}
-                className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md font-medium transition-colors duration-200"
+                className={`block w-full text-left px-3 py-2 text-gray-700 ${hoverTextColor} hover:bg-gray-50 rounded-md font-medium transition-colors duration-200`}
               >
                 About
               </button>
               <button
                 onClick={() => scrollToSection('contact')}
-                className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md font-medium transition-colors duration-200"
+                className={`block w-full text-left px-3 py-2 text-gray-700 ${hoverTextColor} hover:bg-gray-50 rounded-md font-medium transition-colors duration-200`}
               >
                 Contact
               </button>
               <button
                 onClick={() => handleNavigation('/docs')}
-                className="flex items-center space-x-2 w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md font-medium transition-colors duration-200"
+                className={`flex items-center space-x-2 w-full text-left px-3 py-2 text-gray-700 ${hoverTextColor} hover:bg-gray-50 rounded-md font-medium transition-colors duration-200`}
               >
                 <BookOpen className="h-4 w-4" />
                 <span>Documentation</span>
@@ -161,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ navigate }) => {
               <div className="px-3 py-2">
                 <button 
                   onClick={() => scrollToSection('home')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                  className={`w-full ${buttonBgColor} text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200`}
                 >
                   Get Started
                 </button>

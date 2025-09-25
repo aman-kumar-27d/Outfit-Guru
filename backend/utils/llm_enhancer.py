@@ -8,7 +8,7 @@ from .perplexity_client import call_perplexity_chat
 ENHANCER_SYSTEM = (
     "You are a friendly stylist assistant. Given a user's current outfit detections, occasion, and a candidate list of recommended items, "
     "produce ONLY valid JSON with a concise human-friendly 'final_description' (1-3 sentences), 'recommendation_style' (short phrase), "
-    "'confidence_level' (low|medium|high), and an array 'items_explained' with short reasons for each recommended item."
+    "'confidence_level' (low|medium|high), and an array 'items_explained' with short reasons for each recommended item. "
 )
 
 ENHANCER_USER_TEMPLATE = """
@@ -20,7 +20,7 @@ Return JSON only:
 {{
   "final_description": string,
   "recommendation_style": string,
-  "confidence_level": "low"|"medium"|"high",
+  "confidence_level": "low"|"medium"|"high"|,
   "items_explained": [{{"label": string, "reason": string}}]
 }}
 """

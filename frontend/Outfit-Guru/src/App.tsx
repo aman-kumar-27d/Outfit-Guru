@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from "./components/Header";
+import HeaderWithDocs from "./components/HeaderWithDocs";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
@@ -12,12 +12,34 @@ import Features from "./components/Features";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import { DevPage } from "./devcomponents";
+import { DocsRouter } from "./docs";
 
 function App() {
   const [detectorVersion, setDetectorVersion] = useState<'v1' | 'v2'>('v1');
   const [showNotification, setShowNotification] = useState(false);
   const [lastSwitchedVersion, setLastSwitchedVersion] = useState<'v1' | 'v2' | null>(null);
   const [showVersionSwitcher, setShowVersionSwitcher] = useState(true);
+  const [currentRoute, setCurrentRoute] = useState(window.location.pathname);
+
+  // Handle route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setCurrentRoute(window.location.pathname);
+    };
+
+    // Listen for browser navigation
+    window.addEventListener('popstate', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
+
+  // Simple client-side navigation
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentRoute(path);
+  };
 
   // Handle scroll to show/hide version switcher
   useEffect(() => {
@@ -31,13 +53,16 @@ function App() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial state
+    // Only add scroll listener for main app routes (not docs)
+    if (!currentRoute.startsWith('/docs')) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); // Check initial state
+    }
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [currentRoute]);
 
   const handleVersionChange = (version: 'v1' | 'v2') => {
     if (version !== detectorVersion) {
@@ -51,6 +76,11 @@ function App() {
     setShowNotification(false);
     setLastSwitchedVersion(null);
   };
+
+  // Documentation route handler
+  if (currentRoute.startsWith('/docs')) {
+    return <DocsRouter currentPath={currentRoute} />;
+  }
 
   return (
     <Router>
@@ -70,7 +100,7 @@ function App() {
           {/* Main application routes */}
           <Route path="/*" element={
             <>
-              <Header currentVersion={detectorVersion} />
+              <HeaderWithDocs navigate={navigate} currentVersion={detectorVersion} />
               <Navbar currentVersion={detectorVersion} />
               
               {/* Version Switcher */}
