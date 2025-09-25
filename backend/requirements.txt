@@ -14,4 +14,14 @@ mtcnn
 tensorflow
 huggingface_hub
  
-
+pandas 
+pyarrow 
+datasets 
+validators 
+ipyplot
+appdirs 
+boto3
+python-dotenv
+# add prebuilt annoy wheel (auto-resolves fashion-clip annoy issue)
+annoy==1.17.3
+fashion-clip==0.2.2
