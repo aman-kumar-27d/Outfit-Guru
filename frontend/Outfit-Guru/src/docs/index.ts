@@ -6,6 +6,7 @@ export { default as DocLayout } from './components/DocLayout';
 export { default as CodeBlock, InlineCode } from './components/CodeBlock';
 export { default as ImagePreview, ImageGrid } from './components/ImagePreview';
 export { default as Callout } from './components/Callout';
+export { default as SearchModal } from './components/SearchModal';
 
 // Page exports
 export { default as IntroductionPage } from './pages/IntroductionPage';

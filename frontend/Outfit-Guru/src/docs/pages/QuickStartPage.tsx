@@ -37,7 +37,7 @@ const QuickStartPage: React.FC = () => {
 
       <div className="not-prose mb-6">
         <ImagePreview
-          src="/api/placeholder/800/500"
+          src="/docs/images/homepage/PLACEHOLDER_homepage_dashboard_800x500_light.png"
           alt="Outfit Guru Homepage"
           caption="The Outfit Guru homepage with navigation and main features"
         />
@@ -62,12 +62,12 @@ const QuickStartPage: React.FC = () => {
         <ImageGrid
           images={[
             {
-              src: "/api/placeholder/400/300",
+              src: "/docs/images/quickstart/PLACEHOLDER_quickstart_upload_interface_600x400_clean.png",
               alt: "Upload interface",
               caption: "Drag and drop interface for image upload"
             },
             {
-              src: "/api/placeholder/400/300", 
+              src: "/docs/images/quickstart/PLACEHOLDER_quickstart_file_browser_400x300_dialog.png", 
               alt: "File browser",
               caption: "File browser for selecting images"
             }
@@ -135,7 +135,7 @@ const QuickStartPage: React.FC = () => {
 
       <div className="not-prose mb-6">
         <ImagePreview
-          src="/api/placeholder/600/400"
+          src="/docs/images/quickstart/PLACEHOLDER_quickstart_processing_progress_600x400_realtime.png"
           alt="Processing interface"
           caption="Real-time processing with progress indicators"
         />
@@ -153,7 +153,7 @@ const QuickStartPage: React.FC = () => {
 
       <div className="not-prose mb-4">
         <ImagePreview
-          src="/api/placeholder/800/600"
+          src="/docs/images/quickstart/PLACEHOLDER_quickstart_results_analysis_800x600_complete.png"
           alt="Detection results"
           caption="Detected clothing items with bounding boxes and confidence scores"
         />

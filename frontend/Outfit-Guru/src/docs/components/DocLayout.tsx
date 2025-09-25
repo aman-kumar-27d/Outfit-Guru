@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { Menu, X, Home, BookOpen, Search } from 'lucide-react';
 import { docsConfig, type DocItem } from '../data/navigation';
+import SearchModal from './SearchModal';
 
 interface DocLayoutProps {
   children: React.ReactNode;
@@ -20,6 +21,33 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath = '', onClose, className 
     if (href !== '/docs' && currentPath.startsWith(href)) return true;
     return false;
   };
+
+  const renderNavItem = (item: DocItem) => (
+    <a
+      key={item.href}
+      href={item.href}
+      className={`block px-3 py-2 text-sm rounded-md transition-colors ${
+        isActive(item.href)
+          ? 'bg-blue-50 text-blue-700 font-medium'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+      }`}
+      onClick={onClose}
+    >
+      <div className="flex items-center justify-between">
+        <span>{item.title}</span>
+        {item.new && (
+          <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            New
+          </span>
+        )}
+      </div>
+      {item.description && (
+        <p className="mt-1 text-xs text-gray-500 leading-snug">
+          {item.description}
+        </p>
+      )}
+    </a>
+  );
 
   return (
     <div className={`bg-white border-r border-gray-200 h-full ${className}`}>
@@ -40,27 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath = '', onClose, className 
                 {section.title}
               </h3>
               <div className="space-y-1">
-                {section.items?.map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    className={`block px-3 py-2 text-sm rounded-md transition-colors ${
-                      isActive(item.href)
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                    onClick={onClose}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>{item.title}</span>
-                    </div>
-                    {item.description && (
-                      <p className="mt-1 text-xs text-gray-500 leading-snug">
-                        {item.description}
-                      </p>
-                    )}
-                  </a>
-                ))}
+                {section.items?.map((item: DocItem) => renderNavItem(item))}
               </div>
             </div>
           ))}
@@ -72,6 +80,21 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath = '', onClose, className 
 
 const DocLayout: React.FC<DocLayoutProps> = ({ children, currentPath }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  // Handle keyboard shortcut for search
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K to open search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,6 +107,13 @@ const DocLayout: React.FC<DocLayoutProps> = ({ children, currentPath }) => {
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md lg:hidden"
             >
               <Menu className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md md:hidden"
+              title="Search (⌘K)"
+            >
+              <Search className="h-5 w-5" />
             </button>
             <a href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
@@ -103,13 +133,16 @@ const DocLayout: React.FC<DocLayoutProps> = ({ children, currentPath }) => {
               <span>Docs</span>
             </a>
             <div className="relative">
-              <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-500 bg-gray-100 rounded-md">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer"
+              >
                 <Search className="h-4 w-4" />
                 <span>Search docs...</span>
                 <kbd className="inline-flex items-center px-1.5 py-0.5 text-xs font-mono bg-white border border-gray-200 rounded">
                   ⌘K
                 </kbd>
-              </div>
+              </button>
             </div>
           </nav>
         </div>
@@ -143,6 +176,12 @@ const DocLayout: React.FC<DocLayoutProps> = ({ children, currentPath }) => {
           </div>
         </main>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={searchOpen} 
+        onClose={() => setSearchOpen(false)} 
+      />
     </div>
   );
 };

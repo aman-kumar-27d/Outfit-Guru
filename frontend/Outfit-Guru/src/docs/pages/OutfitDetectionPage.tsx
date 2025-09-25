@@ -1,6 +1,6 @@
 import React from 'react';
-import CodeBlock, { InlineCode } from '../components/CodeBlock';
-import ImagePreview, { ImageGrid } from '../components/ImagePreview';
+import CodeBlock from '../components/CodeBlock';
+import ImagePreview from '../components/ImagePreview';
 import Callout from '../components/Callout';
 
 const OutfitDetectionPage: React.FC = () => {
@@ -25,7 +25,7 @@ const OutfitDetectionPage: React.FC = () => {
 
       <div className="not-prose mb-6">
         <ImagePreview
-          src="/api/placeholder/800/500"
+          src="/docs/images/detection/PLACEHOLDER_detection_example_result_800x500_annotated.jpg"
           alt="Outfit detection example"
           caption="Example of outfit detection with bounding boxes and labels"
         />
@@ -42,7 +42,7 @@ const OutfitDetectionPage: React.FC = () => {
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Shirts</li>
               <li>• T-shirts</li>
-              <li>• Blouses</li>
+              <li>• Tops</li>
               <li>• Sweaters</li>
               <li>• Jackets</li>
               <li>• Blazers</li>

@@ -15,7 +15,7 @@ const IntroductionPage: React.FC = () => {
 
       <div className="not-prose mb-8">
         <ImagePreview
-          src="/api/placeholder/800/400"
+          src="/docs/images/homepage/PLACEHOLDER_homepage_dashboard_800x500_light.png"
           alt="Outfit Guru Dashboard"
           caption="Outfit Guru's intuitive interface for outfit detection and analysis"
           className="mb-6"
