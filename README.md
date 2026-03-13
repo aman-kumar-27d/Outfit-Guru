@@ -86,3 +86,6 @@ install.bat
     @echo off
     pip install -r requirements.txt
     python scripts\post_install.py
+
+
+python -m uvicorn app.main:app --reload

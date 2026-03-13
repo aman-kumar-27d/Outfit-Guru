@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 pillow
+
 torch
 torchvision
 transformers
@@ -13,7 +14,6 @@ opencv-python
 mtcnn
 tensorflow
 huggingface_hub
- 
 pandas 
 pyarrow 
 datasets 

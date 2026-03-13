@@ -37,7 +37,7 @@ const DetectionTester: React.FC<DetectionTesterProps> = ({ onResult, onImageSele
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch('http://localhost:8000/detect', {
+      const response = await fetch('http://localhost:8000/detect-v2', {
         method: 'POST',
         body: formData,
       });
@@ -54,7 +54,7 @@ const DetectionTester: React.FC<DetectionTesterProps> = ({ onResult, onImageSele
       
       // Pass request info
       onRequestInfo({
-        endpoint: 'http://localhost:8000/detect',
+        endpoint: 'http://localhost:8000/detect-v2',
         method: 'POST',
         timestamp,
         responseTime,

@@ -52,7 +52,7 @@ async def detect(file: UploadFile = File(...)):
     """
      # Validate file extension
     allowed_ext = (".jpg", ".png")
-    if not file.filename.lower().endswith(allowed_ext):
+    if not file.filename or not file.filename.lower().endswith(allowed_ext):
         return JSONResponse(status_code=400, content={"error": "Only .jpg and .png images are allowed."})
 
     # Read file contents
@@ -69,14 +69,14 @@ async def detect(file: UploadFile = File(...)):
 
 # New detection endpoint using updated detection function
 @app.post("/detect-v2")
-async def detect(file: UploadFile = File(...)):
+async def detect_v2(file: UploadFile = File(...)):
     """
     Accepts an image file, blurs faces, and runs detection.
     Only .jpg and .png images are allowed.
     """
      # Validate file extension
     allowed_ext = (".jpg", ".png")
-    if not file.filename.lower().endswith(allowed_ext):
+    if not file.filename or not file.filename.lower().endswith(allowed_ext):
         return JSONResponse(status_code=400, content={"error": "Only .jpg and .png images are allowed."})
 
     # Read file contents
@@ -139,7 +139,7 @@ async def recommend(req: RecommendRequest):
     )
 
     # Enhance with LLM to produce final_description
-    enhanced = enhance_recommendation(req.detections, req.occasion, recs)
+    enhanced = enhance_recommendation(req.detections, req.occasion or "casual", recs)
 
     return {"hybrid_recommendations": recs, "enhanced": enhanced}
 
