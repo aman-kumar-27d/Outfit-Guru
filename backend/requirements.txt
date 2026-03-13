@@ -22,6 +22,7 @@ ipyplot
 appdirs 
 boto3
 python-dotenv
+anthropic>=0.20.0
 # add prebuilt annoy wheel (auto-resolves fashion-clip annoy issue)
 annoy==1.17.3
 fashion-clip==0.2.2

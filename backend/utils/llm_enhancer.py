@@ -3,7 +3,7 @@
 # backend/utils/llm_enhancer.py
 import json
 from typing import List, Dict, Any, Optional
-from .perplexity_client import call_perplexity_chat
+from .llm_router import call_chat
 
 ENHANCER_SYSTEM = (
     "You are a friendly stylist assistant. Given a user's current outfit detections, occasion, and a candidate list of recommended items, "
@@ -35,7 +35,7 @@ def enhance_recommendation(detections: Dict[str, Any], occasion: str, recommenda
         {"role": "system", "content": ENHANCER_SYSTEM},
         {"role": "user", "content": user_prompt}
     ]
-    _, content = call_perplexity_chat(messages)
+    _, content = call_chat(messages)
     try:
         parsed = json.loads(content)
     except Exception:

@@ -3,7 +3,7 @@
 # backend/utils/llm_analyzer.py
 import json
 from typing import Dict, Any, Optional
-from .perplexity_client import call_perplexity_chat
+from .llm_router import call_chat
 
 ANALYZER_SYSTEM = (
     "You are a concise, objective fashion analyst. "
@@ -50,7 +50,7 @@ def analyze_outfit(detections: Dict[str, Any], person_regions: Optional[list] = 
         {"role": "user", "content": user_msg}
     ]
 
-    raw, content = call_perplexity_chat(messages)
+    raw, content = call_chat(messages)
     # parse content as JSON
     try:
         parsed = json.loads(content)
