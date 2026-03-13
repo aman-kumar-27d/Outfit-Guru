@@ -1,7 +1,7 @@
 # LLM provider router
 # Reads LLM_PROVIDER from .env and delegates to the right client.
-# Supported values: "perplexity" (default), "claude"
-# Auto-falls back to the other provider when the primary call fails.
+# Supported values: "perplexity" (default), "claude", "gemini"
+# Auto-falls back across the remaining configured providers when the primary call fails.
 
 # backend/utils/llm_router.py
 import os
@@ -14,7 +14,12 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-_SUPPORTED = ("perplexity", "claude")
+_SUPPORTED = ("perplexity", "claude", "gemini")
+_API_KEYS = {
+    "perplexity": "PERPLEXITY_API_KEY",
+    "claude": "ANTHROPIC_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+}
 
 
 def _primary_provider() -> str:
@@ -30,8 +35,8 @@ def _primary_provider() -> str:
     return provider
 
 
-def _fallback_provider(primary: str) -> str:
-    return "claude" if primary == "perplexity" else "perplexity"
+def _provider_chain(primary: str) -> List[str]:
+    return [primary, *[provider for provider in _SUPPORTED if provider != primary]]
 
 
 def _call_provider(
@@ -58,6 +63,15 @@ def _call_provider(
             timeout=timeout,
         )
 
+    if provider == "gemini":
+        from .gemini_client import call_gemini_chat, GEMINI_DEFAULT_MODEL
+
+        return call_gemini_chat(
+            messages,
+            model=model or GEMINI_DEFAULT_MODEL,
+            timeout=timeout,
+        )
+
     raise ValueError(f"Unknown LLM provider: {provider!r}")
 
 
@@ -67,45 +81,41 @@ def call_chat(
     timeout: int = 30,
 ) -> Tuple[Dict[str, Any], str]:
     """
-    Unified LLM call.  Reads LLM_PROVIDER from the environment and routes to
-    the appropriate backend.  If the primary provider fails, automatically
-    tries the other one (if its API key is present).
+    Unified LLM call. Reads LLM_PROVIDER from the environment and routes to
+    the appropriate backend. If the primary provider fails, automatically
+    tries the remaining providers that have API keys configured.
 
     messages: list of {"role": "system"|"user"|"assistant", "content": "..."}
     returns:  (raw_response_dict, content_string)
     """
     primary = _primary_provider()
-    fallback = _fallback_provider(primary)
+    attempted_errors: List[str] = []
 
-    try:
-        logger.debug("LLM call via primary provider: %s", primary)
-        return _call_provider(primary, messages, model, timeout)
-    except Exception as primary_err:
-        logger.warning(
-            "Primary LLM provider '%s' failed (%s). Attempting fallback to '%s'.",
-            primary,
-            primary_err,
-            fallback,
-        )
+    for index, provider in enumerate(_provider_chain(primary)):
+        api_key_var = _API_KEYS[provider]
+        if not os.getenv(api_key_var):
+            attempted_errors.append(
+                f"{provider}: missing required env var {api_key_var}"
+            )
+            continue
 
-    # Check whether the fallback provider has a key configured before trying it
-    fallback_key_vars = {
-        "perplexity": "PERPLEXITY_API_KEY",
-        "claude": "ANTHROPIC_API_KEY",
-    }
-    if not os.getenv(fallback_key_vars[fallback]):
-        raise RuntimeError(
-            f"Primary provider '{primary}' failed and fallback provider "
-            f"'{fallback}' has no API key set ({fallback_key_vars[fallback]}). "
-            f"Original error: {primary_err}"
-        ) from primary_err
+        try:
+            if index == 0:
+                logger.debug("LLM call via primary provider: %s", provider)
+            else:
+                logger.info("LLM call via fallback provider: %s", provider)
 
-    try:
-        logger.info("LLM call via fallback provider: %s", fallback)
-        return _call_provider(fallback, messages, model, timeout)
-    except Exception as fallback_err:
-        raise RuntimeError(
-            f"Both LLM providers failed. "
-            f"Primary ('{primary}'): {primary_err}. "
-            f"Fallback ('{fallback}'): {fallback_err}."
-        ) from fallback_err
+            provider_model = model if provider == primary else None
+            return _call_provider(provider, messages, provider_model, timeout)
+        except Exception as provider_err:
+            attempted_errors.append(f"{provider}: {provider_err}")
+            logger.warning(
+                "LLM provider '%s' failed. Trying next configured provider.",
+                provider,
+                exc_info=True,
+            )
+
+    raise RuntimeError(
+        "All configured LLM providers failed. "
+        + " | ".join(attempted_errors)
+    )
