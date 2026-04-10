@@ -56,6 +56,7 @@ type AnalysisResponse = {
     positives: string[];
     negatives: string[];
     lacking_items: string[];
+    llm_suggested_additions: string[];
     llm_tags: string[];
   };
 };
@@ -63,21 +64,21 @@ type AnalysisResponse = {
 export default function OutfitDetectorV2() {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  
+
   // Store both new format and legacy format
   const [newDetections, setNewDetections] = useState<NewServerDetection[]>([]);
-  
+
   // Legacy format for compatibility with analyze endpoint
   const [detections, setDetections] = useState<Detection[]>([]);
   const [personRegions, setPersonRegions] = useState<PersonRegion[]>([]);
-  
+
   const [loading, setLoading] = useState(false);
   const [showAnalyzer, setShowAnalyzer] = useState(false);
   const [showPopover, setShowPopover] = useState(false);
   const [selectedOccasion, setSelectedOccasion] = useState<string>("casual");
   const [analysisData, setAnalysisData] = useState<AnalysisResponse | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
-  
+
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const occasions = [
@@ -163,15 +164,15 @@ export default function OutfitDetectorV2() {
         body: formData,
       });
       const data: NewServerResponse = await res.json();
-      
+
       // Store new format data
       setNewDetections(data.refined_detections || []);
-      
+
       // Convert to legacy format for display and analysis compatibility
       const legacyData = convertToLegacyFormat(data);
       setDetections(legacyData.detections);
       setPersonRegions(legacyData.personRegions);
-      
+
     } catch (err) {
       console.error("Upload failed", err);
     } finally {
@@ -181,7 +182,7 @@ export default function OutfitDetectorV2() {
 
   const handleAnalyze = async () => {
     if (detections.length === 0) return;
-    
+
     setAnalysisLoading(true);
     setShowPopover(false);
     setShowAnalyzer(true);
@@ -227,7 +228,7 @@ export default function OutfitDetectorV2() {
               Upload your outfit photo and let our enhanced AI identify clothing items with improved precision
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* Left Side: Upload + Image */}
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -237,7 +238,7 @@ export default function OutfitDetectorV2() {
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">Upload Outfit</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -250,7 +251,7 @@ export default function OutfitDetectorV2() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                   />
                 </div>
-                
+
                 <button
                   onClick={handleUpload}
                   disabled={loading || !image}
@@ -278,9 +279,9 @@ export default function OutfitDetectorV2() {
                           key={i}
                           className="absolute border-2 border-blue-400 bg-blue-500/20"
                           style={{
-                            left: `${x1+90}px`,
+                            left: `${x1 + 90}px`,
                             top: `${y1}px`,
-                            width: `${(x2 - x1)+10}px`,
+                            width: `${(x2 - x1) + 10}px`,
                             height: `${y2 - y1}px`,
                           }}
                         >
@@ -303,7 +304,7 @@ export default function OutfitDetectorV2() {
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">Detected Items</h3>
               </div>
-              
+
               <div className="h-[500px] overflow-y-auto pr-2">
                 {detections.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
@@ -317,11 +318,11 @@ export default function OutfitDetectorV2() {
                   <div className="space-y-3">
                     {detections.map((det, i) => {
                       // Find corresponding new detection for additional color info
-                      const newDet = newDetections.find(nd => 
-                        nd.refined_label === det.label && 
+                      const newDet = newDetections.find(nd =>
+                        nd.refined_label === det.label &&
                         JSON.stringify(nd.bbox) === JSON.stringify(det.bbox)
                       );
-                      
+
                       return (
                         <div
                           key={i}
@@ -347,7 +348,7 @@ export default function OutfitDetectorV2() {
                             >
                               <Palette className="w-3 h-3 text-white drop-shadow-sm" />
                             </div>
-                            
+
                             {/* Show additional colors if available */}
                             {newDet && newDet.colors.slice(1).map((color, colorIndex) => (
                               <div
@@ -359,7 +360,7 @@ export default function OutfitDetectorV2() {
                                 <Palette className="w-3 h-3 text-white drop-shadow-sm" />
                               </div>
                             ))}
-                            
+
                             <span className="text-xs text-gray-400 font-mono">
                               {det.dominant_color_hex}
                             </span>
@@ -370,7 +371,7 @@ export default function OutfitDetectorV2() {
                   </div>
                 )}
               </div>
-              
+
               {/* Person Regions */}
               {personRegions.map((person, i) => (
                 <div key={i} className="mt-4">
@@ -389,7 +390,7 @@ export default function OutfitDetectorV2() {
                   </div>
                 </div>
               ))}
-              
+
               {/* Analyze Button with Occasion Selector - Show only when detections exist */}
               {detections.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-gray-200">
@@ -402,7 +403,7 @@ export default function OutfitDetectorV2() {
                       Analyze My Outfit
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showPopover ? 'rotate-180' : ''}`} />
                     </button>
-                    
+
                     {/* Popover Dropdown */}
                     {showPopover && (
                       <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
@@ -410,7 +411,7 @@ export default function OutfitDetectorV2() {
                           <h4 className="text-sm font-medium text-gray-900 mb-3">Select Occasion</h4>
                           <div className="space-y-2">
                             {occasions.map((occasion) => (
-                              <label 
+                              <label
                                 key={occasion.value}
                                 className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
                               >
@@ -429,7 +430,7 @@ export default function OutfitDetectorV2() {
                               </label>
                             ))}
                           </div>
-                          
+
                           <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
                             <button
                               onClick={() => setShowPopover(false)}
@@ -450,13 +451,13 @@ export default function OutfitDetectorV2() {
                       </div>
                     )}
                   </div>
-                  
+
                   <p className="text-sm text-gray-500 text-center mt-2">
                     Get detailed analysis and recommendations for your outfit
                   </p>
                 </div>
               )}
-              
+
             </div>
           </div>
         </div>
@@ -464,7 +465,7 @@ export default function OutfitDetectorV2() {
 
       {/* Outfit Analyzer Section - Show when user clicks analyze */}
       {showAnalyzer && (
-        <OutfitAnalyzer 
+        <OutfitAnalyzer
           detections={detections}
           personRegions={personRegions}
           selectedOccasion={selectedOccasion}

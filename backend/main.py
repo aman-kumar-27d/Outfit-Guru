@@ -100,6 +100,7 @@ class AnalyzeRequest(BaseModel):
     occasion: Optional[str] = "casual"
 
 
+@app.post("/analyze")
 @app.post("/analyze/")
 async def analyze_image(req: AnalyzeRequest):
     """
@@ -118,6 +119,7 @@ class RecommendRequest(BaseModel):
     occasion: Optional[str] = "casual"
     exclude_previous: Optional[list] = None  # e.g. ["denim jacket"]
 
+@app.post("/recommend")
 @app.post("/recommend/")
 async def recommend(req: RecommendRequest):
     # use LLM analyzer suggestions if provided in the detection JSON (optional)

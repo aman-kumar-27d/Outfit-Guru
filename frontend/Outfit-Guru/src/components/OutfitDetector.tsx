@@ -25,6 +25,7 @@ type AnalysisResponse = {
     positives: string[];
     negatives: string[];
     lacking_items: string[];
+    llm_suggested_additions: string[];
     llm_tags: string[];
   };
 };
@@ -41,7 +42,7 @@ export default function OutfitDetector() {
   const [selectedOccasion, setSelectedOccasion] = useState<string>("casual");
   const [analysisData, setAnalysisData] = useState<AnalysisResponse | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
-  
+
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const occasions = [
@@ -97,7 +98,7 @@ export default function OutfitDetector() {
 
   const handleAnalyze = async () => {
     if (detections.length === 0) return;
-    
+
     setAnalysisLoading(true);
     setShowPopover(false);
     setShowAnalyzer(true);
@@ -143,7 +144,7 @@ export default function OutfitDetector() {
               Upload your outfit photo and let our AI identify clothing items with precision
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* Left Side: Upload + Image */}
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -153,7 +154,7 @@ export default function OutfitDetector() {
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">Upload Outfit</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -166,7 +167,7 @@ export default function OutfitDetector() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                   />
                 </div>
-                
+
                 <button
                   onClick={handleUpload}
                   disabled={loading || !image}
@@ -194,9 +195,9 @@ export default function OutfitDetector() {
                           key={i}
                           className="absolute border-2 border-blue-400 bg-blue-500/20"
                           style={{
-                            left: `${x1+90}px`,
+                            left: `${x1 + 90}px`,
                             top: `${y1}px`,
-                            width: `${(x2 - x1)+10}px`,
+                            width: `${(x2 - x1) + 10}px`,
                             height: `${y2 - y1}px`,
                           }}
                         >
@@ -219,7 +220,7 @@ export default function OutfitDetector() {
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">Detected Items</h3>
               </div>
-              
+
               <div className="h-[500px] overflow-y-auto pr-2">
                 {detections.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
@@ -264,7 +265,7 @@ export default function OutfitDetector() {
                   </div>
                 )}
               </div>
-              
+
               {/* Person Regions */}
               {personRegions.map((person, i) => (
                 <div key={i} className="mt-4">
@@ -283,7 +284,7 @@ export default function OutfitDetector() {
                   </div>
                 </div>
               ))}
-              
+
               {/* Analyze Button with Occasion Selector - Show only when detections exist */}
               {detections.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-gray-200">
@@ -296,7 +297,7 @@ export default function OutfitDetector() {
                       Analyze My Outfit
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showPopover ? 'rotate-180' : ''}`} />
                     </button>
-                    
+
                     {/* Popover Dropdown */}
                     {showPopover && (
                       <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
@@ -304,7 +305,7 @@ export default function OutfitDetector() {
                           <h4 className="text-sm font-medium text-gray-900 mb-3">Select Occasion</h4>
                           <div className="space-y-2">
                             {occasions.map((occasion) => (
-                              <label 
+                              <label
                                 key={occasion.value}
                                 className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
                               >
@@ -323,7 +324,7 @@ export default function OutfitDetector() {
                               </label>
                             ))}
                           </div>
-                          
+
                           <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
                             <button
                               onClick={() => setShowPopover(false)}
@@ -344,13 +345,13 @@ export default function OutfitDetector() {
                       </div>
                     )}
                   </div>
-                  
+
                   <p className="text-sm text-gray-500 text-center mt-2">
                     Get detailed analysis and recommendations for your outfit
                   </p>
                 </div>
               )}
-              
+
             </div>
           </div>
         </div>
@@ -358,7 +359,7 @@ export default function OutfitDetector() {
 
       {/* Outfit Analyzer Section - Show when user clicks analyze */}
       {showAnalyzer && (
-        <OutfitAnalyzer 
+        <OutfitAnalyzer
           detections={detections}
           personRegions={personRegions}
           selectedOccasion={selectedOccasion}

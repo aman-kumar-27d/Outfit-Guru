@@ -59,7 +59,8 @@ def call_gemini_chat(
         "contents": contents,
         "generationConfig": {
             "temperature": 0.2,
-            "maxOutputTokens": 512,
+            "maxOutputTokens": 1024,
+            "responseMimeType": "application/json",
         },
     }
     if system_prompt:

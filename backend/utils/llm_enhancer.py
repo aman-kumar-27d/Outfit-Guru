@@ -2,8 +2,13 @@
 
 # backend/utils/llm_enhancer.py
 import json
+import logging
 from typing import List, Dict, Any, Optional
 from .llm_router import call_chat
+from .llm_response_parser import parse_llm_json_dict, normalize_enhancement_payload
+
+
+logger = logging.getLogger(__name__)
 
 ENHANCER_SYSTEM = (
     "You are a friendly stylist assistant. Given a user's current outfit detections, occasion, and a candidate list of recommended items, "
@@ -20,7 +25,7 @@ Return JSON only:
 {{
   "final_description": string,
   "recommendation_style": string,
-  "confidence_level": "low"|"medium"|"high"|,
+    "confidence_level": "low"|"medium"|"high",
   "items_explained": [{{"label": string, "reason": string}}]
 }}
 """
@@ -36,14 +41,6 @@ def enhance_recommendation(detections: Dict[str, Any], occasion: str, recommenda
         {"role": "user", "content": user_prompt}
     ]
     _, content = call_chat(messages)
-    try:
-        parsed = json.loads(content)
-    except Exception:
-        # graceful fallback: wrap plain text into JSON
-        parsed = {
-            "final_description": content.strip(),
-            "recommendation_style": "",
-            "confidence_level": "medium",
-            "items_explained": []
-        }
-    return parsed
+    parsed, parse_path = parse_llm_json_dict(content)
+    logger.info("llm_enhancer parse_path=%s", parse_path)
+    return normalize_enhancement_payload(parsed, fallback_text=content)

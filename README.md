@@ -88,4 +88,4 @@ install.bat
     python scripts\post_install.py
 
 
-python -m uvicorn app.main:app --reload
+python -m uvicorn main:app --reload

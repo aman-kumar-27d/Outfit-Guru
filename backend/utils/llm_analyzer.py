@@ -2,8 +2,13 @@
 
 # backend/utils/llm_analyzer.py
 import json
+import logging
 from typing import Dict, Any, Optional
 from .llm_router import call_chat
+from .llm_response_parser import parse_llm_json_dict, normalize_analysis_payload
+
+
+logger = logging.getLogger(__name__)
 
 ANALYZER_SYSTEM = (
     "You are a concise, objective fashion analyst. "
@@ -51,23 +56,6 @@ def analyze_outfit(detections: Dict[str, Any], person_regions: Optional[list] = 
     ]
 
     raw, content = call_chat(messages)
-    # parse content as JSON
-    try:
-        parsed = json.loads(content)
-    except Exception:
-        # try to extract last JSON-looking content
-        import re
-        match = re.search(r'(\{[\s\S]*\})', content)
-        if match:
-            parsed = json.loads(match.group(1))
-        else:
-            # safe fallback
-            parsed = {
-                "outfit_description": content.strip(),
-                "positives": [],
-                "negatives": [],
-                "lacking_items": [],
-                "llm_suggested_additions": [],
-                "llm_tags": []
-            }
-    return parsed
+    parsed, parse_path = parse_llm_json_dict(content)
+    logger.info("llm_analyzer parse_path=%s raw_keys=%s", parse_path, list(raw.keys())[:5] if isinstance(raw, dict) else [])
+    return normalize_analysis_payload(parsed, fallback_text=content)

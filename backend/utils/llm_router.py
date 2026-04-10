@@ -1,7 +1,5 @@
 # LLM provider router
-# Reads LLM_PROVIDER from .env and delegates to the right client.
-# Supported values: "perplexity" (default), "claude", "gemini"
-# Auto-falls back across the remaining configured providers when the primary call fails.
+# Temporary hardening mode: force Gemini and disable provider fallback.
 
 # backend/utils/llm_router.py
 import os
@@ -23,15 +21,15 @@ _API_KEYS = {
 
 
 def _primary_provider() -> str:
-    provider = os.getenv("LLM_PROVIDER", "perplexity").strip().lower()
+    provider = os.getenv("LLM_PROVIDER", "gemini").strip().lower()
     if provider not in _SUPPORTED:
         logger.warning(
-            "LLM_PROVIDER='%s' is unknown. Falling back to 'perplexity'. "
+            "LLM_PROVIDER='%s' is unknown. Falling back to 'gemini'. "
             "Supported values: %s",
             provider,
             _SUPPORTED,
         )
-        return "perplexity"
+        return "gemini"
     return provider
 
 
@@ -81,41 +79,24 @@ def call_chat(
     timeout: int = 30,
 ) -> Tuple[Dict[str, Any], str]:
     """
-    Unified LLM call. Reads LLM_PROVIDER from the environment and routes to
-    the appropriate backend. If the primary provider fails, automatically
-    tries the remaining providers that have API keys configured.
+    Unified LLM call with temporary strict mode: routes only to Gemini and
+    does not attempt cross-provider fallback.
 
     messages: list of {"role": "system"|"user"|"assistant", "content": "..."}
     returns:  (raw_response_dict, content_string)
     """
     primary = _primary_provider()
-    attempted_errors: List[str] = []
+    provider = "gemini"
 
-    for index, provider in enumerate(_provider_chain(primary)):
-        api_key_var = _API_KEYS[provider]
-        if not os.getenv(api_key_var):
-            attempted_errors.append(
-                f"{provider}: missing required env var {api_key_var}"
-            )
-            continue
+    if primary != "gemini":
+        logger.warning(
+            "Temporary hardening active: overriding LLM_PROVIDER='%s' to 'gemini'.",
+            primary,
+        )
 
-        try:
-            if index == 0:
-                logger.debug("LLM call via primary provider: %s", provider)
-            else:
-                logger.info("LLM call via fallback provider: %s", provider)
+    api_key_var = _API_KEYS[provider]
+    if not os.getenv(api_key_var):
+        raise RuntimeError(f"{provider}: missing required env var {api_key_var}")
 
-            provider_model = model if provider == primary else None
-            return _call_provider(provider, messages, provider_model, timeout)
-        except Exception as provider_err:
-            attempted_errors.append(f"{provider}: {provider_err}")
-            logger.warning(
-                "LLM provider '%s' failed. Trying next configured provider.",
-                provider,
-                exc_info=True,
-            )
-
-    raise RuntimeError(
-        "All configured LLM providers failed. "
-        + " | ".join(attempted_errors)
-    )
+    logger.debug("LLM call via strict provider: %s", provider)
+    return _call_provider(provider, messages, model, timeout)
