@@ -13,6 +13,9 @@ export { default as IntroductionPage } from './pages/IntroductionPage';
 export { default as InstallationPage } from './pages/InstallationPage';
 export { default as QuickStartPage } from './pages/QuickStartPage';
 export { default as OutfitDetectionPage } from './pages/OutfitDetectionPage';
+export { default as ProjectStructurePage } from './pages/ProjectStructurePage';
+export { default as StyleAnalysisPage } from './pages/StyleAnalysisPage';
+export { default as RecommendationsPage } from './pages/RecommendationsPage';
 
 // Data exports
 export { docsConfig, type DocItem, type SidebarNavItem } from './data/navigation';
@@ -20,12 +23,12 @@ export { docsConfig, type DocItem, type SidebarNavItem } from './data/navigation
 // Utility function to get the current documentation route
 export const getCurrentDocRoute = (): string => {
   if (typeof window === 'undefined') return '/docs';
-  
+
   const path = window.location.pathname;
   if (path.startsWith('/docs')) {
     return path;
   }
-  
+
   return '/docs';
 };
 

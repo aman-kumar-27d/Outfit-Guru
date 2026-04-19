@@ -20,7 +20,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Email</p>
-                      <p className="text-gray-600">hello@outfitguru.com</p>
+                      <p className="text-gray-600">aman.kumar1.aiml.2022@mitmeerut.ac.in</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -29,7 +29,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Phone</p>
-                      <p className="text-gray-600">+1 (555) 123-4567</p>
+                      <p className="text-gray-600">+91 (950) 123-6283</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -38,7 +38,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Location</p>
-                      <p className="text-gray-600">San Francisco, CA</p>
+                      <p className="text-gray-600">MIT Meerut, Uttar Pradesh</p>
                     </div>
                   </div>
                 </div>
@@ -53,7 +53,7 @@ const Contact = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="John"
+                      placeholder="Aman"
                     />
                   </div>
                   <div>
@@ -61,7 +61,7 @@ const Contact = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Doe"
+                      placeholder="Kumar"
                     />
                   </div>
                 </div>
@@ -70,7 +70,7 @@ const Contact = () => {
                   <input
                     type="email"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="john.doe@example.com"
+                    placeholder="aman.kumar1.aiml.2022@mitmeerut.ac.in"
                   />
                 </div>
                 <div>

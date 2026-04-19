@@ -23,26 +23,26 @@ const Footer = () => {
               Outfit<span className="text-blue-400">Guru</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Your personal AI-powered fashion assistant. Get outfit recommendations, 
+              Your personal AI-powered fashion assistant. Get outfit recommendations,
               style advice, and discover your perfect look with cutting-edge technology.
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://x.com/BS2Amankumar"
                 className="text-gray-400 hover:text-blue-400 transition-colors duration-200"
                 aria-label="Follow us on Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/aman-kumar-27d/"
                 className="text-gray-400 hover:text-blue-400 transition-colors duration-200"
                 aria-label="Follow us on LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://github.com/aman-kumar-27d"
                 className="text-gray-400 hover:text-blue-400 transition-colors duration-200"
                 aria-label="View our GitHub"
               >
@@ -107,15 +107,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span className="text-gray-400">hello@outfitguru.com</span>
+                <span className="text-gray-400">aman.kumar1.aiml.2022@mitmeerut.ac.in</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-blue-400" />
-                <span className="text-gray-400">+1 (555) 123-4567</span>
+                <span className="text-gray-400">+91 (950) 123-6283</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="w-4 h-4 text-blue-400" />
-                <span className="text-gray-400">San Francisco, CA</span>
+                <span className="text-gray-400">MIT Meerut, Uttar Pradesh</span>
               </div>
             </div>
           </div>
